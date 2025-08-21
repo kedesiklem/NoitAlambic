@@ -2,68 +2,122 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #181a1b;
     color: #e0e3e7;
+    margin: 0;
+    padding: 20px;
 }
 .container {
-    max-width: 1200px;
-    display: flex;
+    margin: 0 auto;
+    display : flex;
     flex-direction: column;
-    gap: 0;
 }
 .header {
     background: linear-gradient(135deg, #232b4e, #4b2c5e);
     color: #fff;
+    padding: 15px;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+    display : flex;
+    justify-content: space-between;
+}
+.header h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+.controls {
+    display : flex;
+    flex-wrap: wrap;
+}
+/* Nouveau style pour les boutons de contrôle et la checkbox */
+.controls button {
+    background: #3a4050;
+    color: #a0a8c0;
+    border: 1px solid #4a5264;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    margin: 0 5px 5px 0;
+    transition: all 0.2s ease;
+}
+
+.controls button:hover {
+    background: #4a5264;
+    color: #d0d8e8;
+    border-color: #5a6274;
+}
+
+.controls label {
+    display: flex;
+    align-items: center;
+    background: #3a4050;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid #4a5264;
+    color: #a0a8c0;
+    font-size: 0.85rem;
+    margin: 0 5px 5px 0;
+    transition: all 0.2s ease;
+}
+
+.controls label:hover {
+    background: #4a5264;
+    color: #d0d8e8;
+    border-color: #5a6274;
+}
+
+.controls input[type="checkbox"] {
+    margin-right: 6px;
+    accent-color: #6e8efb;
+    cursor: pointer;
 }
 .content {
-    display: flex;
-    gap: 0;
+    display : flex;
+    flex-wrap:nowrap;
+}
+
+.hierarchy-panel, .info-panel, .graph-container {
+    background: #23272a;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    flex: 1;
 }
 .graph-container {
     flex: 2;
-    background: #23272a;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
-.info-panel {
-    flex: 1;
-    background: #23272a;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-}
-object {
-    width: 100%;
-    height: 500px;
-    border: 1px solid #333;
-    border-radius: 5px;
-    background: #23272a;
-    cursor: pointer;
+.hierarchy-panel h2, .info-panel h2, .graph-container h2 {
+    color: #6e8efb;
+    margin-top: 0;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
 }
 .node-info {
     background: #232b4e;
+    padding: 15px;
     border-radius: 5px;
     border-left: 4px solid #6e8efb;
 }
-h1 {
-    font-size: 2.5rem;
+#graphviz-container {
+    margin-top: 15px;
+    min-height: 500px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    overflow: auto;
 }
-h2 {
-    color: #6e8efb;
+#hierarchy-info ul, #tags-info ul, #reactions-info ul {
+    padding-left: 20px;
 }
-button {
-    background: #6e8efb;
+#hierarchy-info li, #tags-info li, #reactions-info li {
+    margin-bottom: 5px;
+}
+#reactions-info em {
+    color: #ffcc00;
+}
+select {
+    background: #333;
     color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    
-}
-button:hover {
-    background: #5a7de0;
-}
-.instructions {
-    background: #2d2a1f;
-    border-radius: 5px;
-    border-left: 4px solid #ffcc00;
+    border: 1px solid #555;
+    padding: 5px;
+    border-radius: 4px;
+    margin-right: 10px;
 }
