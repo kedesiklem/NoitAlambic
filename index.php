@@ -23,71 +23,132 @@ MathJax = {
     <div class="container">       
         <div class="content">
             <div class="graph-container">
-                <h2>Graphique interactif</h2>
+                <h2>Graphique des réactions de matériaux</h2>
+                <div>
+                    <label for="material-select">Sélectionner un matériau: </label>
+                    <select id="material-select" onchange="onMaterialSelected()">
+                        <option value="">-- Choisir un matériau --</option>
+                    </select>
+                </div>
                 <div id="graphviz-container">
                     <!-- Le graphique sera chargé ici -->
-                </div>
-                <div style="margin-top: 20px;">
-                    <button onclick="generateRandomGraph()">Générer un nouveau graphique</button>
                 </div>
             </div>
             
             <div class="info-panel">
                 <h2>Informations</h2>
                 <div class="node-info">
-                    <h3>Nœud sélectionné :</h3>
-                    <p id="selected-node">Aucun nœud sélectionné</p>
+                    <h3>Matériau sélectionné :</h3>
+                    <p id="selected-material">Aucun matériau sélectionné</p>
+                    <h3>Réactions :</h3>
+                    <div id="reactions-info"></div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Charger les scripts nécessaires -->
+    <script src="hierarchyBuilder.js"></script>
     <script>
-        // Fonction pour générer un graphique GraphViz aléatoire
-        function randomGraphviz(label) {
-            const nbNodes = 10;
-            const nodes = [];
+        let materialsData = null;
+        let hierarchy = null;
+        let currentMaterial = '';
+
+        // Fonction pour parser le XML (simulée car non fournie dans hierarchyBuilder.js)
+        function parseMaterialsXML(xmlContent) {
+            // Cette fonction devrait normalement parser le XML
+            // Pour cette démo, nous allons créer un faux document XML
+            const parser = new DOMParser();
+            return parser.parseFromString(xmlContent, "text/xml");
+        }
+
+        // Charger les données des matériaux (normalement depuis un fichier ou API)
+        async function loadMaterialsData() {
+            // Dans une implémentation réelle, on chargerait le XML depuis un fichier
+            // Pour cette démo, nous allons créer des données factices
+            const response = await fetch('assets/materials.xml');
+            const xmlContent = await response.text();
             
-            // Ajouter le nœud du label fourni
-            nodes.push(label);
+            materialsData = parseMaterialsXML(xmlContent);
+            hierarchy = buildMaterialHierarchy(materialsData);
             
-            // Ajouter des nœuds avec des noms aléatoires
-            for (let i = 0; i < nbNodes; i++) {
-                nodes.push("N" + Math.floor(Math.random() * 900 + 100));
+            // Remplir le sélecteur de matériaux
+            const materialSelect = document.getElementById('material-select');
+            materialSelect.innerHTML = '<option value="">-- Choisir un matériau --</option>';
+            
+            for (const materialName in hierarchy) {
+                const option = document.createElement('option');
+                option.value = materialName;
+                option.textContent = materialName;
+                materialSelect.appendChild(option);
             }
+        }
+
+        // Générer le graphique GraphViz pour un matériau spécifique
+        function generateReactionsGraph(materialName) {
+            if (!materialName) return "digraph { node [shape=box]; \"Sélectionnez un matériau\"; }";
             
-            // Construction du DOT
+            const reactions = getReactionsForMaterial(materialsData, hierarchy, materialName);
+            const formattedReactions = formatReactions(reactions);
+            
             let dot = "digraph {";
-            dot += "  splines=ortho;"
-            dot += "  rankdir=\"LR\";"
-            dot += "  ratio=0.45;"
-            dot += "  node [shape=box, style=filled, color=lightblue, onclick=\"nodeClick(this.innerHTML)\"];";
-            dot += "  edge [color=gray40];";
+            // dot += "  splines=ortho;";
+            dot += "  rankdir=\"LR\";";
+            dot += "  ratio=0.6;";
+            dot += "  nodesep=0.3;";       // Réduit l'espace entre les nodes sur le même rang
+            dot += "  ranksep=0.4;";       // Réduit l'espace entre les différents rangs
+            dot += "  node [shape=box, style=filled, color=lightblue, onclick=\"nodeClick(this.innerHTML)\", width=0.8, height=0.5];"; // Taille réduite des nodes
+            dot += "  edge [color=gray40, fontsize=10];";
             
-            // Déclaration des nœuds
-            nodes.forEach(n => {
-                dot += `  "${n}" [URL="javascript:void(0);"];`;
-            });
+            // Ajouter le matériau central
+            dot += `  "${materialName}" [fillcolor=lightcoral, URL="javascript:void(0);"];`;
             
-            // Ajout d'arêtes aléatoires
-            const edgesCount = Math.floor(Math.random() * (nodes.length * 2)) + nodes.length;
-            const addedEdges = new Set();
+            // Ensemble pour suivre les nœuds déjà ajoutés
+            const addedNodes = new Set([materialName]);
             
-            for (let i = 0; i < edgesCount; i++) {
-                const from = nodes[Math.floor(Math.random() * nodes.length)];
-                const to = nodes[Math.floor(Math.random() * nodes.length)];
+            // Parcourir les réactions pour ajouter les nœuds et les arêtes
+            formattedReactions.forEach((reaction, index) => {
+                // Ajouter les nœuds d'entrée
+                reaction.input.forEach(input => {
+                    if (!addedNodes.has(input)) {
+                        dot += `  "${input}" [URL="javascript:void(0);"];`;
+                        addedNodes.add(input);
+                    }
+                });
                 
-                if (from !== to && !addedEdges.has(from + to)) {
-                    dot += `  "${from}" -> "${to}";`;
-                    addedEdges.add(from + to);
+                // Ajouter les nœuds de sortie
+                reaction.output.forEach(output => {
+                    if (!addedNodes.has(output)) {
+                        dot += `  "${output}" [URL="javascript:void(0);"];`;
+                        addedNodes.add(output);
+                    }
+                });
+                
+                // Créer un nœud invisible pour la réaction (pour un meilleur placement)
+                const reactionNode = `reaction_${index}`;
+                dot += `  "${reactionNode}" [shape=circle, width=0.1, height=0.1, label="", style=invis];`;
+                
+                // Relier les entrées à la réaction
+                reaction.input.forEach(input => {
+                    dot += `  "${input}" -> "${reactionNode}" [dir=none];`;
+                });
+                
+                // Relier la réaction aux sorties
+                reaction.output.forEach(output => {
+                    dot += `  "${reactionNode}" -> "${output}";`;
+                });
+                
+                // Ajouter la probabilité comme label sur l'arête de sortie principale
+                if (reaction.output.length > 0) {
+                    dot += `  "${reactionNode}" -> "${reaction.output[0]}" [label="${reaction.probability}"];`;
                 }
-            }
+            });
             
             dot += "}";
             return dot;
         }
-        
-        // Fonction pour rendre le graphique GraphViz
+
+        // Rendre le graphique GraphViz
         function renderGraphviz(dotCode) {
             // Utilisation de Viz.js pour le rendu
             const viz = new Viz();
@@ -99,13 +160,16 @@ MathJax = {
                     container.appendChild(element);
                     
                     // Ajouter des écouteurs d'événements pour les nœuds
+                    // pour les tag afficher les elements concerné
                     const nodes = element.querySelectorAll('[class^="node"] title');
                     nodes.forEach(node => {
                         const parent = node.parentElement;
-                        parent.style.cursor = 'pointer';
-                        parent.addEventListener('click', function() {
-                            nodeClick(node.textContent);
-                        });
+                        if (node.textContent !== '' && !node.textContent.startsWith('reaction_')) {
+                            parent.style.cursor = 'pointer';
+                            parent.addEventListener('click', function() {
+                                nodeClick(node.textContent);
+                            });
+                        }
                     });
                 })
                 .catch(error => {
@@ -114,23 +178,66 @@ MathJax = {
                         '<p>Erreur lors du rendu du graphique. Assurez-vous que Viz.js est chargé.</p>';
                 });
         }
-        
+
         // Gestionnaire de clic sur un nœud
-        function nodeClick(label) {
-            document.getElementById('selected-node').textContent = label;
-            const newDot = randomGraphviz(label);
-            renderGraphviz(newDot);
+        function nodeClick(materialName) {
+            document.getElementById('material-select').value = materialName;
+            onMaterialSelected();
         }
-        
-        // Générer un graphique aléatoire initial
-        function generateRandomGraph() {
-            document.getElementById('selected-node').textContent = 'Aucun nœud sélectionné';
-            const initialLabel = 'F';
-            const dot = randomGraphviz(initialLabel);
-            renderGraphviz(dot);
+
+        // Lorsqu'un matériau est sélectionné
+        function onMaterialSelected() {
+            const materialSelect = document.getElementById('material-select');
+            currentMaterial = materialSelect.value;
+            
+            if (currentMaterial) {
+                document.getElementById('selected-material').textContent = currentMaterial;
+                
+                // Générer et afficher le graphique
+                const dot = generateReactionsGraph(currentMaterial);
+                renderGraphviz(dot);
+                
+                // Afficher les informations sur les réactions
+                displayReactionsInfo(currentMaterial);
+            } else {
+                document.getElementById('selected-material').textContent = 'Aucun matériau sélectionné';
+                document.getElementById('reactions-info').innerHTML = '';
+                document.getElementById('graphviz-container').innerHTML = '';
+            }
         }
-        
-        // Charger Viz.js et initialiser le graphique
+
+        // Afficher les informations sur les réactions
+        function displayReactionsInfo(materialName) {
+            const reactions = getReactionsForMaterial(materialsData, hierarchy, materialName);
+            const formattedReactions = formatReactions(reactions);
+            
+            const reactionsContainer = document.getElementById('reactions-info');
+            reactionsContainer.innerHTML = '';
+            
+            if (formattedReactions.length === 0) {
+                reactionsContainer.innerHTML = '<p>Aucune réaction trouvée pour ce matériau.</p>';
+                return;
+            }
+            
+            const list = document.createElement('ul');
+            formattedReactions.forEach(reaction => {
+                const item = document.createElement('li');
+                
+                let reactionText = '';
+                if (reaction.isInputReaction) {
+                    reactionText = `${reaction.input.join(' + ')} → ${reaction.output.join(' + ')} (Probabilité: ${reaction.probability})`;
+                } else if (reaction.isOutputReaction) {
+                    reactionText = `${reaction.input.join(' + ')} → ${reaction.output.join(' + ')} (Probabilité: ${reaction.probability})`;
+                }
+                
+                item.textContent = reactionText;
+                list.appendChild(item);
+            });
+            
+            reactionsContainer.appendChild(list);
+        }
+
+        // Initialisation
         document.addEventListener('DOMContentLoaded', function() {
             // Charger Viz.js dynamiquement
             const script = document.createElement('script');
@@ -138,7 +245,10 @@ MathJax = {
             script.onload = function() {
                 const script2 = document.createElement('script');
                 script2.src = 'full.render.js';
-                script2.onload = generateRandomGraph;
+                script2.onload = function() {
+                    // Charger les données des matériaux
+                    loadMaterialsData();
+                };
                 document.head.appendChild(script2);
             };
             document.head.appendChild(script);
