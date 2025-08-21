@@ -1,85 +1,69 @@
-
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background-color: #f5f7f9;
-    color: #333;
+    background-color: #181a1b;
+    color: #e0e3e7;
 }
 .container {
     max-width: 1200px;
-    margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 0;
 }
 .header {
-    text-align: center;
-    padding: 20px;
-    background: linear-gradient(135deg, #6e8efb, #a777e3);
-    color: white;
+    background: linear-gradient(135deg, #232b4e, #4b2c5e);
+    color: #fff;
     border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.4);
 }
 .content {
     display: flex;
-    gap: 20px;
+    gap: 0;
 }
 .graph-container {
     flex: 2;
-    background: white;
-    padding: 20px;
+    background: #23272a;
     border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
 .info-panel {
     flex: 1;
-    background: white;
-    padding: 20px;
+    background: #23272a;
     border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
 object {
     width: 100%;
     height: 500px;
-    border: 1px solid #ddd;
+    border: 1px solid #333;
     border-radius: 5px;
-    background: white;
+    background: #23272a;
     cursor: pointer;
 }
 .node-info {
-    margin-top: 20px;
-    padding: 15px;
-    background: #f0f4ff;
+    background: #232b4e;
     border-radius: 5px;
     border-left: 4px solid #6e8efb;
 }
 h1 {
-    margin: 0;
     font-size: 2.5rem;
 }
 h2 {
     color: #6e8efb;
-    margin-top: 0;
 }
 button {
     background: #6e8efb;
-    color: white;
+    color: #fff;
     border: none;
-    padding: 10px 15px;
     border-radius: 5px;
     cursor: pointer;
     font-weight: bold;
-    transition: background 0.3s;
+    
 }
 button:hover {
     background: #5a7de0;
 }
 .instructions {
-    background: #fff8e6;
-    padding: 15px;
+    background: #2d2a1f;
     border-radius: 5px;
     border-left: 4px solid #ffcc00;
-    margin-bottom: 20px;
 }

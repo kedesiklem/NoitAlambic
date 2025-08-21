@@ -1,27 +1,23 @@
 <!DOCTYPE html>
 <html lang='fr'>
 <head>
-<script>
-MathJax = {
-  tex: {
-    inlineMath: {'[+]': [['$', '$']]}
-  },
-  svg: {
-    fontCache: 'global'
-  }
-};
-</script>
-    <script type='text/javascript' id='MathJax-script' async
-        src='https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js'>
-    </script>
     <link rel='stylesheet' href='style.css'>
-
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <title>NoitAlambic - POC</title>
 </head>
 <body>
     <div class="container">       
         <div class="content">
+            <div class="info-panel">
+                <h2>Informations</h2>
+                <div class="node-info">
+                    <h3>Matériau sélectionné :</h3>
+                    <p id="selected-material">Aucun matériau sélectionné</p>
+                    <h3>Réactions :</h3>
+                    <div id="reactions-info"></div>
+                </div>
+            </div>
+
             <div class="graph-container">
                 <h2>Graphique des réactions de matériaux</h2>
                 <div>
@@ -32,16 +28,6 @@ MathJax = {
                 </div>
                 <div id="graphviz-container">
                     <!-- Le graphique sera chargé ici -->
-                </div>
-            </div>
-            
-            <div class="info-panel">
-                <h2>Informations</h2>
-                <div class="node-info">
-                    <h3>Matériau sélectionné :</h3>
-                    <p id="selected-material">Aucun matériau sélectionné</p>
-                    <h3>Réactions :</h3>
-                    <div id="reactions-info"></div>
                 </div>
             </div>
         </div>
@@ -92,11 +78,9 @@ MathJax = {
             const formattedReactions = formatReactions(reactions);
             
             let dot = "digraph {";
-            // dot += "  splines=ortho;";
+            dot += "  splines=ortho;";
             dot += "  rankdir=\"LR\";";
-            dot += "  ratio=0.6;";
-            dot += "  nodesep=0.3;";       // Réduit l'espace entre les nodes sur le même rang
-            dot += "  ranksep=0.4;";       // Réduit l'espace entre les différents rangs
+            dot += "  bgcolor=\"#333333\";";
             dot += "  node [shape=box, style=filled, color=lightblue, onclick=\"nodeClick(this.innerHTML)\", width=0.8, height=0.5];"; // Taille réduite des nodes
             dot += "  edge [color=gray40, fontsize=10];";
             
@@ -124,10 +108,13 @@ MathJax = {
                     }
                 });
                 
-                // Créer un nœud invisible pour la réaction (pour un meilleur placement)
+                // Créer un nœud pour la réaction avec un label court et un tooltip détaillé (label avec title)
                 const reactionNode = `reaction_${index}`;
-                dot += `  "${reactionNode}" [shape=circle, width=0.1, height=0.1, label="", style=invis];`;
-                
+                const inputLabel = reaction.input.join(' + ');
+                const outputLabel = reaction.output.join(' + ');
+                const reactionLabel = 'Réaction';
+                const reactionTooltip = `${inputLabel} → ${outputLabel} (Probabilité: ${reaction.probability})`;
+                dot += `  "${reactionNode}" [shape=box, label="${reactionLabel}", style=filled, fillcolor="#f9f9a9", fontcolor="#333", tooltip="${reactionTooltip}"];`;
                 // Relier les entrées à la réaction
                 reaction.input.forEach(input => {
                     dot += `  "${input}" -> "${reactionNode}" [dir=none];`;
