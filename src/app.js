@@ -404,10 +404,10 @@ let materialsData = null;
         document.addEventListener('DOMContentLoaded', function() {
             // Charger Viz.js dynamiquement
             const script = document.createElement('script');
-            script.src = 'viz.js';
+            script.src = 'external/viz.js';
             script.onload = function() {
                 const script2 = document.createElement('script');
-                script2.src = 'full.render.js';
+                script2.src = 'external/full.render.js';
                 script2.onload = function() {
                     // Charger les données des matériaux
                     loadMaterialsData();
