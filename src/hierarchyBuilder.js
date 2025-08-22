@@ -78,24 +78,39 @@ function getReactionsForMaterial(xmlDoc, hierarchy, targetMaterial) {
             reaction.getAttribute('output_cell3')
         ].filter(Boolean);
         
-        const isInputRelated = inputCells.some(cell => 
-            materialsToCheck.includes(cell) || 
-            (cell.startsWith('[') && cell.endsWith(']') && 
-             checkTagMatch(cell, targetMaterial, hierarchy, xmlDoc))
-        );
+        // Vérifier d'abord la présence DIRECTE du matériau
+        const hasDirectInput = inputCells.includes(targetMaterial);
+        const hasDirectOutput = outputCells.includes(targetMaterial);
         
-        const isOutputRelated = outputCells.some(cell => 
-            materialsToCheck.includes(cell) || 
-            (cell.startsWith('[') && cell.endsWith(']') && 
-             checkTagMatch(cell, targetMaterial, hierarchy, xmlDoc))
-        );
-        
-        if (isInputRelated || isOutputRelated) {
+        // Si le matériau est présent directement, c'est une réaction directe
+        if (hasDirectInput || hasDirectOutput) {
             relevantReactions.push({
                 reaction: reaction,
-                isInput: isInputRelated,
-                isOutput: isOutputRelated
+                isInput: hasDirectInput,
+                isOutput: hasDirectOutput,
+                isDirect: true // Ajouter un flag pour indiquer que c'est direct
             });
+        } 
+        // Sinon, vérifier les tags (réaction indirecte)
+        else {
+            const isInputRelated = inputCells.some(cell => 
+                cell.startsWith('[') && cell.endsWith(']') && 
+                checkTagMatch(cell, targetMaterial, hierarchy, xmlDoc)
+            );
+            
+            const isOutputRelated = outputCells.some(cell => 
+                cell.startsWith('[') && cell.endsWith(']') && 
+                checkTagMatch(cell, targetMaterial, hierarchy, xmlDoc)
+            );
+            
+            if (isInputRelated || isOutputRelated) {
+                relevantReactions.push({
+                    reaction: reaction,
+                    isInput: isInputRelated,
+                    isOutput: isOutputRelated,
+                    isDirect: false // Indiquer que c'est indirect
+                });
+            }
         }
     });
     
@@ -120,7 +135,7 @@ function checkTagMatch(tagPattern, materialName, hierarchy, xmlDoc) {
 }
 
 function formatReactions(reactions) {
-    return reactions.map(({reaction, isInput, isOutput}) => {
+    return reactions.map(({reaction, isInput, isOutput, isDirect}) => {
         return {
             probability: reaction.getAttribute('probability'),
             input: [
@@ -134,7 +149,8 @@ function formatReactions(reactions) {
                 reaction.getAttribute('output_cell3')
             ].filter(Boolean),
             isInputReaction: isInput,
-            isOutputReaction: isOutput
+            isOutputReaction: isOutput,
+            isDirect: isDirect // Nouvelle propriété
         };
     });
 }
